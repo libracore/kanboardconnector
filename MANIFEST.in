@@ -1,0 +1,18 @@
+include MANIFEST.in
+include requirements.txt
+include *.json
+include *.md
+include *.py
+include *.txt
+recursive-include kanboardconnector *.css
+recursive-include kanboardconnector *.csv
+recursive-include kanboardconnector *.html
+recursive-include kanboardconnector *.ico
+recursive-include kanboardconnector *.js
+recursive-include kanboardconnector *.json
+recursive-include kanboardconnector *.md
+recursive-include kanboardconnector *.png
+recursive-include kanboardconnector *.py
+recursive-include kanboardconnector *.svg
+recursive-include kanboardconnector *.txt
+recursive-exclude kanboardconnector *.pyc
