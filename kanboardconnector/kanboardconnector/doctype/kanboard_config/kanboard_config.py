@@ -40,11 +40,15 @@ def get_auth_header(api_token):
 # execute API function
 def execute(host, api_token, payload):
     # request    
-    request = http.Request(host, headers=get_auth_header(api_token), data=json.dumps(payload).encode())
-    response = http.urlopen(request).read()
+    try:
+        request = http.Request(host, headers=get_auth_header(api_token), data=json.dumps(payload).encode())
+        response = http.urlopen(request).read()
 
-    body = json.loads(response.decode())
-    return body['result']
+        body = json.loads(response.decode())
+        return body['result']
+    except:
+        frappe.log_error("Execution of http request failed. Please check host and API token.")
+        frappe.throw("Execution of http request failed. Please check host and API token.")
 
 # read all projects
 # returns a list of dicts for each project
@@ -87,7 +91,7 @@ def get_columns(host, api_token, project_id):
 @frappe.whitelist()
 def sync():
     config = frappe.get_single("Kanboard Config")
-    
+
     if config.token and config.host:
         # start sync
         # read all projects
@@ -96,29 +100,27 @@ def sync():
             # only work on active projects
             if project['is_active'] == "1":
                 # check if this project exists already
-                erp_project = frappe.get_doc("Project", project['name'])
-                if erp_project:
-                    # project exists
-                    
-                else:
+                try:
+                    erp_project = frappe.get_doc("Project", project['name'])
+                except:
                     # project does not exist in ERPNext, create
                     new_project = frappe.get_doc({"doctype": "Project"})
                     new_project.project_name = project['name']
                     new_project.status = "Open"
                     new_project.insert()
                     
-                print("---{0}---".format(project['name']))
-                columns = get_columns(host, api_token, project['id'])
-                tasks = get_tasks(host, api_token, project['id'])
-                for task in tasks:
-                    #print("{0}: mod {1}".format(task['title'], task['date_modification']))
-                    modified = datetime.fromtimestamp(float(task['date_modification']))
-                    for column in columns:
-                        if column['id'] == task['column_id']:
-                            status = column['position']
-                            break
-                    description = task['description']
-                    print("{0}: {1} - {2} [{3}]".format(task['id'], task['title'].encode('utf-8'), modified, status))
+                #print("---{0}---".format(project['name']))
+                #columns = get_columns(host, api_token, project['id'])
+                #tasks = get_tasks(host, api_token, project['id'])
+                #for task in tasks:
+                #    #print("{0}: mod {1}".format(task['title'], task['date_modification']))
+                #    modified = datetime.fromtimestamp(float(task['date_modification']))
+                #    for column in columns:
+                #        if column['id'] == task['column_id']:
+                #            status = column['position']
+                #            break
+                #    description = task['description']
+                #    print("{0}: {1} - {2} [{3}]".format(task['id'], task['title'].encode('utf-8'), modified, status))
                     
     else:
         frappe.log_error("Kanboard Connector: attempted sync, but configuration missing host or api token")
