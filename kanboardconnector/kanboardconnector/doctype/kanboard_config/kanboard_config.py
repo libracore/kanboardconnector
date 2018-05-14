@@ -110,17 +110,31 @@ def sync():
                     new_project.insert()
                     
                 #print("---{0}---".format(project['name']))
-                #columns = get_columns(host, api_token, project['id'])
-                #tasks = get_tasks(host, api_token, project['id'])
-                #for task in tasks:
-                #    #print("{0}: mod {1}".format(task['title'], task['date_modification']))
-                #    modified = datetime.fromtimestamp(float(task['date_modification']))
-                #    for column in columns:
-                #        if column['id'] == task['column_id']:
-                #            status = column['position']
-                #            break
-                #    description = task['description']
-                #    print("{0}: {1} - {2} [{3}]".format(task['id'], task['title'].encode('utf-8'), modified, status))
+                columns = get_columns(config.host, config.token, project['id'])
+                tasks = get_tasks(config.host, config.token, project['id'])
+                for task in tasks:
+                    #print("{0}: mod {1}".format(task['title'], task['date_modification']))
+                    modified = datetime.fromtimestamp(float(task['date_modification']))
+                    for column in columns:
+                        if column['id'] == task['column_id']:
+                            status = column['position']
+                            break
+                    description = task['description']
+                    #print("{0}: {1} - {2} [{3}]".format(task['id'], task['title'].encode('utf-8'), modified, status))
+                    matching_tasks = frappe.get_all("Task", filters={'kanboard_id': task['id']}, fields=['name'])
+                    if matching_tasks:
+                        # there is a task matching the kanboard id --> update
+                        
+                        pass
+                    else:
+                        # no matching task, create
+                        new_task = frappe.get_doc({"doctype": "Task"})
+                        new_task.project = project['name']
+                        new_task.status = "Open"
+                        new_task.subject = task['title']
+                        new_task.description = description
+                        new_task.insert()
+
                     
     else:
         frappe.log_error("Kanboard Connector: attempted sync, but configuration missing host or api token")
