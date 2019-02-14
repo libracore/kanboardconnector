@@ -10,7 +10,7 @@ with open('kanboardconnector/__init__.py', 'rb') as f:
         f.read().decode('utf-8')).group(1)))
 
 with open('requirements.txt') as f:
-	install_requires = f.read().strip().split('\n')
+    install_requires = f.read().strip().split('\n')
 
 setup(
 	name='kanboardconnector',
